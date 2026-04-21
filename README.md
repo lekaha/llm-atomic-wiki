@@ -132,6 +132,23 @@ The whole loop is `Ingest → Compile → Index/Log → Lint → Query`. Re-run 
 
 ---
 
+## OpenFang Integration (Autonomous Hand)
+
+This repository natively supports [OpenFang](https://www.openfang.sh/) autonomous Hands. Instead of manually pacing the LLM, you can export a fully autonomous `atomic-wiki-operator` Hand (combining a `HAND.toml` and your `CLAUDE.md` turned into a `SKILL.md`) that manages the pipeline automatically.
+
+1. **Export the Hand bundle** to your OpenFang agents folder:
+   ```bash
+   ./scripts/export-openfang-hand.sh ~/.openfang/agents/
+   ```
+2. **Spawn the agent**:
+   ```bash
+   openfang spawn --template ~/.openfang/agents/atomic-wiki-operator/HAND.toml
+   ```
+
+The agent will operate the `Ingest → Compile → Index/Log → Lint → Query` loop for you safely, executing all required bash scripts using its `shell_exec` capability whenever you delegate tasks to it.
+
+---
+
 ## Deep dives
 
 - **[STORY.md](STORY.md)** — the personal story: why I ran it, what worked, what surprised me.

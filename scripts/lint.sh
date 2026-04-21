@@ -3,7 +3,11 @@
 # 檢查四項：ghost links、orphan pages、format violations、outdated markers
 # 產出 lint-report.md
 
-WIKI_DIR="$(cd "$(dirname "$0")/../wiki" && pwd)"
+if [ -n "$WIKI_BASE_PATH" ]; then
+  WIKI_DIR="$WIKI_BASE_PATH/wiki"
+else
+  WIKI_DIR="$(cd "$(dirname "$0")/../wiki" && pwd)"
+fi
 REPORT="$WIKI_DIR/../lint-report.md"
 ERRORS=0
 WARNINGS=0

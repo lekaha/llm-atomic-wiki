@@ -3,7 +3,11 @@
 # Usage: ./log-append.sh "描述這次變更的內容"
 # Example: ./log-append.sh "新增 harness-engineering-security.md，更新 index.md"
 
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+if [ -n "$WIKI_BASE_PATH" ]; then
+  REPO_ROOT="$WIKI_BASE_PATH"
+else
+  REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+fi
 LOG="$REPO_ROOT/log.md"
 DATE=$(date '+%Y-%m-%d')
 MESSAGE="${1:-（未提供變更描述）}"

@@ -5,7 +5,11 @@
 # Branches are auto-discovered by filename prefix (the part before the first hyphen).
 # If you want a fixed branch order or display names, edit the BRANCHES override below.
 
-WIKI_DIR="$(cd "$(dirname "$0")/../wiki" && pwd)"
+if [ -n "$WIKI_BASE_PATH" ]; then
+  WIKI_DIR="$WIKI_BASE_PATH/wiki"
+else
+  WIKI_DIR="$(cd "$(dirname "$0")/../wiki" && pwd)"
+fi
 INDEX="$WIKI_DIR/../index.md"
 
 # ─── Branch order and display names ───
