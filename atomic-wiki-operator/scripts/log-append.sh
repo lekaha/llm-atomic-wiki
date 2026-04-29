@@ -18,16 +18,15 @@ if [ ! -f "$LOG" ]; then
   echo "" >> "$LOG"
 fi
 
-# Prepend entry (after the header)
-TMP_LOG=$(mktemp)
-{
-  head -n 2 "$LOG"
-  echo "## $DATE"
-  echo ""
-  echo "- $MESSAGE"
-  echo ""
-  tail -n +3 "$LOG"
-} > "$TMP_LOG"
-mv "$TMP_LOG" "$LOG"
+# Append entry (prepend after the header so newest is on top)
+# Strategy: insert after line 2 (after "# Wiki Change Log\n")
+ENTRY="## $DATE\n\n- $MESSAGE\n"
+
+# Use sed to insert after the first blank line (after header)
+sed -i "2a\\
+\\
+## $DATE\\
+\\
+- $MESSAGE" "$LOG"
 
 echo "Log appended: $DATE — $MESSAGE"

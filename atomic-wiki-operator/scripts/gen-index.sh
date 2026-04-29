@@ -34,13 +34,23 @@ declare -a BRANCHES=(
 # ─── Auto-discover branches if not overridden ───
 if [ ${#BRANCHES[@]} -eq 0 ]; then
   # Extract branch prefixes from filenames (everything before first hyphen)
-  BRANCH_LIST=$(ls "$WIKI_DIR"/*.md 2>/dev/null | xargs -n 1 basename | grep -vE "^(index|log|_template|README)\.md$" | cut -d'-' -f1 | sort -u)
-  
-  for branch in $BRANCH_LIST; do
-    # Display name = branch with hyphens->spaces and capitalized
-    display=$(echo "$branch" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')
-    BRANCHES+=("$branch|$display")
+  declare -A SEEN
+  for f in "$WIKI_DIR"/*.md; do
+    [ -f "$f" ] || continue
+    slug=$(basename "$f" .md)
+    [[ "$slug" == "index" || "$slug" == "log" || "$slug" == "_template" || "$slug" == "README" ]] && continue
+    # Branch = filename up to first hyphen
+    branch="${slug%%-*}"
+    if [[ -z "${SEEN[$branch]}" ]]; then
+      SEEN[$branch]=1
+      # Display name = branch with hyphens->spaces and capitalized
+      display=$(echo "$branch" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')
+      BRANCHES+=("$branch|$display")
+    fi
   done
+  # Sort branches alphabetically
+  IFS=$'\n' BRANCHES=($(sort <<<"${BRANCHES[*]}"))
+  unset IFS
 fi
 
 # ─── Count pages ───

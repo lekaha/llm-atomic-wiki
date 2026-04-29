@@ -1,0 +1,17 @@
+name: atomic-wiki
+version: 1.0.0
+description: Manages atomic wikis (generates index, linting, appends logs) natively in Python.
+author: "Agent"
+
+requires_env:
+  - name: ATOMIC_WIKI_PATHS
+    description: "Comma-separated absolute paths to atomic wiki directories"
+    secret: false
+
+provides_tools:
+  - atomic_wiki_gen_index
+  - atomic_wiki_append_log
+  - atomic_wiki_lint
+
+provides_hooks:
+  - pre_llm_call

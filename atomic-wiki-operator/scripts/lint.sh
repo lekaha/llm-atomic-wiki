@@ -17,7 +17,18 @@ echo "" >> "$REPORT"
 echo "> Generated: $(date '+%Y-%m-%d %H:%M')" >> "$REPORT"
 echo "" >> "$REPORT"
 
+# Collect all wiki slugs (filename without .md)
+declare -A SLUGS
+for f in "$WIKI_DIR"/*.md; do
+  [ -f "$f" ] || continue
+  slug=$(basename "$f" .md)
+  # Skip index and log
+  [[ "$slug" == "index" || "$slug" == "log" ]] && continue
+  SLUGS["$slug"]=1
+done
+
 # ─── 1. Ghost Links ───
+# Find [[links]] that point to non-existent pages
 echo "## 1. Ghost Links（指向不存在頁面的連結）" >> "$REPORT"
 echo "" >> "$REPORT"
 FOUND_GHOST=0
@@ -25,14 +36,13 @@ FOUND_GHOST=0
 for f in "$WIKI_DIR"/*.md; do
   [ -f "$f" ] || continue
   slug=$(basename "$f" .md)
-  [[ "$slug" == "index" || "$slug" == "log" || "$slug" == "lint-report" ]] && continue
+  [[ "$slug" == "index" || "$slug" == "log" ]] && continue
 
   # Extract all [[...]] links
   while IFS= read -r link; do
     # Strip the display text if present (e.g. [[slug|display]])
     target="${link%%|*}"
-    # Check if target exists as a .md file
-    if [ ! -f "$WIKI_DIR/$target.md" ]; then
+    if [[ -z "${SLUGS[$target]}" ]]; then
       echo "- \`$slug\` → \`[[$target]]\` (not found)" >> "$REPORT"
       FOUND_GHOST=1
       ((ERRORS++))
@@ -46,31 +56,37 @@ fi
 echo "" >> "$REPORT"
 
 # ─── 2. Orphan Pages ───
+# Pages with zero incoming links from other wiki pages
 echo "## 2. Orphan Pages（沒有任何頁面連結過來的頁面）" >> "$REPORT"
 echo "" >> "$REPORT"
 FOUND_ORPHAN=0
 
-# Iterate through all wiki pages
+# Collect all outgoing links
+declare -A INCOMING
+for slug in "${!SLUGS[@]}"; do
+  INCOMING["$slug"]=0
+done
+
 for f in "$WIKI_DIR"/*.md; do
   [ -f "$f" ] || continue
   slug=$(basename "$f" .md)
-  [[ "$slug" == "index" || "$slug" == "log" || "$slug" == "lint-report" ]] && continue
+  [[ "$slug" == "index" || "$slug" == "log" ]] && continue
 
-  # Check if any other page links to this one
-  # Avoid self-links and index/log links
-  MATCH_COUNT=$(grep -l "\[\[$slug\(\|\]\]\)" "$WIKI_DIR"/*.md | grep -v "$f" | grep -vE "(index|log|lint-report)\.md" | wc -l)
-  
-  if [ "$MATCH_COUNT" -eq 0 ]; then
+  while IFS= read -r link; do
+    target="${link%%|*}"
+    if [[ -n "${SLUGS[$target]}" ]]; then
+      INCOMING["$target"]=$(( ${INCOMING[$target]:-0} + 1 ))
+    fi
+  done < <(grep -o '\[\[[^]]*\]\]' "$f" 2>/dev/null | sed 's/^\[\[//;s/\]\]$//')
+done
+
+for slug in $(echo "${!SLUGS[@]}" | tr ' ' '\n' | sort); do
+  if [[ "${INCOMING[$slug]}" == "0" ]]; then
     echo "- \`$slug\`" >> "$REPORT"
     FOUND_ORPHAN=1
     ((WARNINGS++))
   fi
 done
-
-if [ $FOUND_ORPHAN -eq 0 ]; then
-  echo "None." >> "$REPORT"
-fi
-echo "" >> "$REPORT"
 
 if [ $FOUND_ORPHAN -eq 0 ]; then
   echo "None." >> "$REPORT"
