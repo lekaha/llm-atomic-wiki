@@ -28,13 +28,13 @@ Migrating to a native Hermes Plugin offers several significant advantages:
 To use the plugin, the Hermes Agent requires the `ATOMIC_WIKI_PATHS` environment variable to be set. This defines which folders the agent should manage.
 
 ```bash
-export ATOMIC_WIKI_PATHS="/Users/lekaha/workspace/my-atomic-wiki"
+export ATOMIC_WIKI_PATHS="/path/to/my-atomic-wiki"
 ```
 
 You can manage multiple wiki paths by separating them with a comma:
 
 ```bash
-export ATOMIC_WIKI_PATHS="/Users/lekaha/workspace/my-atomic-wiki,/Users/lekaha/workspace/another-wiki"
+export ATOMIC_WIKI_PATHS="/path/to/my-atomic-wiki,/path/to/another-wiki"
 ```
 
 ### Integration
@@ -50,7 +50,7 @@ Load the plugin when starting your Hermes Agent. The plugin uses the standard `r
 **User**: *"Can you run a health check on my private atomic wiki?"*
 
 **Hermes Agent**:
-1. Checks the context and sees it manages `/Users/lekaha/workspace/my-atomic-wiki`.
+1. Checks the context and sees it manages `/path/to/my-atomic-wiki`.
 2. Invokes the `atomic_wiki_lint` tool with the path.
-3. The tool generates `/Users/lekaha/workspace/my-atomic-wiki/lint-report.md` and returns a JSON summary (e.g., `{"success": true, "errors": 2, "warnings": 1}`).
+3. The tool generates `/path/to/my-atomic-wiki/lint-report.md` and returns a JSON summary (e.g., `{"success": true, "errors": 2, "warnings": 1}`).
 4. The agent reads the JSON and responds: *"I found 2 ghost links and 1 orphan page. I have generated a full report at `lint-report.md`."*
