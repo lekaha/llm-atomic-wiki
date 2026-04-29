@@ -11,6 +11,8 @@ You are operating on a knowledge base built on the LLM Wiki pattern (Karpathy 20
 
 This file is the formal spec — read it before touching anything. Mental model, operations, file formats, lifecycle rules, and what you must never do.
 
+> **Note on Methodology**: If you need to understand the deep philosophy of *why* we use atoms, *when* to split/merge an atom, or how the ingestion pipeline works conceptually, you MUST use your `view_file` tool to read `METHODOLOGY.md` located in this skill directory before proceeding.
+
 ---
 
 ## Mental model
