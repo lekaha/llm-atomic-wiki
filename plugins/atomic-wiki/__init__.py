@@ -1,7 +1,6 @@
 import os
-from .schemas import ATOMIC_WIKI_GEN_INDEX, ATOMIC_WIKI_APPEND_LOG, ATOMIC_WIKI_LINT
-from .tools import atomic_wiki_gen_index, atomic_wiki_append_log, atomic_wiki_lint
-
+from .schemas import ATOMIC_WIKI_GEN_INDEX, ATOMIC_WIKI_APPEND_LOG, ATOMIC_WIKI_LINT, ATOMIC_WIKI_INGEST
+from .tools import atomic_wiki_gen_index, atomic_wiki_append_log, atomic_wiki_lint, atomic_wiki_ingest
 def pre_llm_call(ctx, **kwargs):
     """Inject configured atomic wiki paths into the LLM context."""
     paths_env = os.environ.get("ATOMIC_WIKI_PATHS", "")
@@ -30,8 +29,13 @@ def register(ctx):
     ctx.register_tool(ATOMIC_WIKI_GEN_INDEX, atomic_wiki_gen_index)
     ctx.register_tool(ATOMIC_WIKI_APPEND_LOG, atomic_wiki_append_log)
     ctx.register_tool(ATOMIC_WIKI_LINT, atomic_wiki_lint)
+    ctx.register_tool(ATOMIC_WIKI_INGEST, atomic_wiki_ingest)
     
     # Register bundled skill
     skill_path = os.path.join(os.path.dirname(__file__), "skills", "atomic-wiki-operator", "SKILL.md")
     if os.path.exists(skill_path):
         ctx.register_skill("atomic-wiki-operator", skill_path)
+        
+    # Register memory provider
+    from .memory_provider import AtomicWikiMemoryProvider
+    ctx.register_memory_provider(AtomicWikiMemoryProvider())

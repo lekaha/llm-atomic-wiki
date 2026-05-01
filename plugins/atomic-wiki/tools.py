@@ -87,6 +87,54 @@ def atomic_wiki_append_log(args: dict, **kwargs) -> str:
     except Exception as e:
         return json.dumps({"error": f"Log append failed: {e}"})
 
+def atomic_wiki_ingest(args: dict, **kwargs) -> str:
+    """Ingest new or updated pages into the wiki, then generate index and log.
+    Expected args:
+      - wiki_path: str
+      - pages: list of dicts, each with "slug" and "content"
+      - log_message: str (the message to append to log.md)
+    """
+    wiki_path = args.get("wiki_path", "").strip()
+    pages = args.get("pages", [])
+    log_message = args.get("log_message", "").strip()
+    
+    if not wiki_path or not os.path.isdir(wiki_path):
+        return json.dumps({"error": f"Invalid or missing wiki_path: {wiki_path}"})
+    if not pages:
+        return json.dumps({"error": "No pages provided to ingest"})
+    
+    wiki_dir = os.path.join(wiki_path, "wiki")
+    if not os.path.isdir(wiki_dir):
+        os.makedirs(wiki_dir, exist_ok=True)
+        
+    try:
+        saved_pages = []
+        for page in pages:
+            slug = page.get("slug")
+            content = page.get("content")
+            if not slug or not content:
+                continue
+            
+            filepath = os.path.join(wiki_dir, f"{slug}.md")
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(content)
+            saved_pages.append(slug)
+            
+        # Step 4: Run index and log-append
+        index_res = json.loads(atomic_wiki_gen_index({"wiki_path": wiki_path}))
+        log_res = None
+        if log_message:
+            log_res = json.loads(atomic_wiki_append_log({"wiki_path": wiki_path, "message": log_message}))
+            
+        return json.dumps({
+            "success": True,
+            "saved_pages": saved_pages,
+            "index_result": index_res,
+            "log_result": log_res
+        })
+    except Exception as e:
+        return json.dumps({"error": f"Ingest failed: {e}"})
+
 def atomic_wiki_lint(args: dict, **kwargs) -> str:
     """Lint atomic wiki markdown files."""
     wiki_path = args.get("wiki_path", "").strip()

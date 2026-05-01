@@ -102,13 +102,13 @@ See `atoms/_template.md` for a copyable starter.
 
 Pattern: `<branch>-<topic-slug>.md`
 
-- Branch prefix lets `gen-index.sh` group pages.
+- Branch prefix lets the `atomic_wiki_gen_index` tool group pages.
 - All lowercase, hyphens only.
 - Lives flat in `wiki/`, not in subfolders.
 
 ### First line
 
-Must be `# Title`. `gen-index.sh` reads this for the index entry. Lint flags violations.
+Must be `# Title`. The `atomic_wiki_gen_index` tool reads this for the index entry. Lint flags violations.
 
 ### Wiki links
 
@@ -237,7 +237,7 @@ Constraints:
 
 Two layers, run in order:
 
-**Programmatic Lint** (`scripts/lint.sh`) — runs first, no LLM needed. Checks ghost links, orphan pages, format violations, outdated markers. Output: `lint-report.md`.
+**Programmatic Lint** (via `atomic_wiki_lint` tool) — runs first, no LLM needed. Checks ghost links, orphan pages, format violations, outdated markers. Output: `lint-report.md`.
 
 **LLM Lint** — runs after programmatic Lint passes. Read `index.md` plus all wiki pages and check:
 - **Contradictions** — page A says "X is best practice", page B says "X is deprecated". Flag both with paths and quoted segments.
@@ -251,20 +251,17 @@ Append findings to `lint-report.md` under an `## LLM Lint` section, sorted by se
 
 ## After every change
 
-Run these in order:
+Run these in order using the provided plugin tools:
 
-```bash
-./scripts/gen-index.sh                    # rebuild index
-./scripts/log-append.sh "what you did"    # record change
-```
+- **Ingestion**: Use `atomic_wiki_ingest` tool to save pages, regenerate index, and log the change simultaneously.
+- **Manual Logging**: Use `atomic_wiki_append_log` tool to record what you did if you didn't use the ingest tool.
+- **Manual Indexing**: Use `atomic_wiki_gen_index` tool to rebuild the index if you didn't use the ingest tool.
 
 Then if you compiled or modified wiki pages:
 
-```bash
-./scripts/lint.sh                         # programmatic Lint
-```
+- **Programmatic Lint**: Use the `atomic_wiki_lint` tool.
 
-If `lint.sh` reports errors (not just warnings), fix them before declaring done.
+If the lint tool reports errors (not just warnings), fix them before declaring done.
 
 ---
 
@@ -306,11 +303,11 @@ The defaults ship with reasonable opinionated choices. To adapt:
 
 - **Add `source_type` values** for your sources (e.g. `email`, `slack`, `obsidian`).
 - **Add `type` values** if your knowledge has categories beyond the seven defaults.
-- **Adjust temporal regex** in `scripts/lint.sh` to match your conventions.
-- **Define your own branch boundary table** in your fork's `STORY.md` or methodology notes.
+- **Adjust temporal regex** in the `atomic_wiki_lint` tool to match your conventions.
+- **Define your own branch boundary table** in your wiki's methodology notes.
 - **Tune length thresholds** if your wiki style is denser or looser than 1500–2500 words.
 
-Document any deviation — rules and scripts are coupled, divergence without documentation will confuse future contributors (including future-you).
+Document any deviation — rules and tools are coupled, divergence without documentation will confuse future contributors (including future-you).
 
 ---
 

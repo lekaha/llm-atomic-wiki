@@ -12,6 +12,9 @@ provides_tools:
   - atomic_wiki_gen_index
   - atomic_wiki_append_log
   - atomic_wiki_lint
+  - atomic_wiki_ingest
 
 provides_hooks:
   - pre_llm_call
+  - prefetch
+  - system_prompt_block
